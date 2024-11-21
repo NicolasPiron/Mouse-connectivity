@@ -1,19 +1,28 @@
 from utils.preproc import *
 from utils.plotting import *
+from utils.params import groups
 
+if not len(glob.glob('data/*/*souris*.csv')) == 0:
+    print('Data already preprocessed')
+else:
+    txt_csv()
+    print('Successfully transformed .txt to .csv')
+
+if not os.path.exists('data/all_df.csv'):
+    all_df()
+
+df = pd.read_csv('data/all_df.csv')
+fig1 = plot_grp_box(df)
+fig2 = plot_sexdiff_box(df)
+fig3 = plot_female_box(df)
+fig1.savefig('derivative/average/average_connectivity.png', dpi=300)    
+fig2.savefig('derivative/average/average_connectivity_sexdiff.png', dpi=300)
+fig3.savefig('derivative/average/average_connectivity_female.png', dpi=300)
 
 # to plot the average connectivity matrix of each group
 pop_vals = []
 pop_names = []
-for pop in os.listdir('data'):
-    pop_name = pop.split('/')[0]
-    if pop_name == '.DS_Store':
-        continue
-    grp_mat(pop)
+for pop in groups:
 
-    # mat_list = get_grp_mat(pop_name)
-    
-    # average_list = [mat.mean() for mat in mat_list]
-    # print(average_list)
-    # pop_vals.append(average_list)
-    # pop_names.append(pop)
+    plot_grp_mat(pop, females=False)
+    plot_grp_mat(pop, females=True)
