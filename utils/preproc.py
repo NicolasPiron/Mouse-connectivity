@@ -13,6 +13,14 @@ def check_tree():
         os.makedirs('derivative/average')
     if not os.path.exists('derivative/stats'):
         os.makedirs('derivative/stats')
+    if not os.path.exists('derivative/stats/null'):
+        os.makedirs('derivative/stats/null')
+    if not os.path.exists('derivative/stats/pvals'):
+        os.makedirs('derivative/stats/pvals')
+    if not os.path.exists('derivative/stats/adjacency'):
+        os.makedirs('derivative/stats/adjacency')
+    if not os.path.exists('derivative/stats/figures'):
+        os.makedirs('derivative/stats/figures')
     
 def get_single_mat(id):
 

@@ -4,5 +4,6 @@ data/
 *.xlsx
 *.txt
 local_test.py
+dl_results.sh
 .DS_Store
 __pycache__/

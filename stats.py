@@ -7,14 +7,14 @@ from utils.params import comparisons
 # This script compares the average connectivity matrices of all the pairs of
 # groups
 ################################################################################
-
+check_tree()
 
 def run_nbs(comparisons, females=False):
 
     for pop1, pop2 in comparisons:
 
         stack, y, _, _ = get_nbs_inputs(pop1, pop2, females=females)
-        pval, adj, _ = nbs_bct_corr_z(stack, thresh=0.15, y_vec=y, k=1000)
+        pval, adj, null = nbs_bct_corr_z(stack, thresh=0.15, y_vec=y, k=1)
 
         outdir = f'derivative/stats/'
         if not os.path.exists(outdir):
@@ -23,6 +23,11 @@ def run_nbs(comparisons, females=False):
             cmp_name = f'fem_{pop1}-vs-{pop2}'
         else:
             cmp_name = f'{pop1}-vs-{pop2}'
+
+        # save the null distribution, p-values and adjacency matrix in .csv files
+        np.savetxt(os.path.join(outdir, 'null', f'{cmp_name}_null.csv'), null, delimiter=',')
+        np.savetxt(os.path.join(outdir, 'pvals', f'{cmp_name}_pval.csv'), pval, delimiter=',')
+        np.savetxt(os.path.join(outdir, 'adjacency', f'{cmp_name}_adj.csv'), adj, delimiter=',')
 
         # group 1 average * adj
         print(f'--- multipliying {pop1} by adj ---')
@@ -46,7 +51,7 @@ def run_nbs(comparisons, females=False):
             fig3 = plot_mat(diff, f'females - {pop1} < {pop2} - pval={pval}')
         else:
             fig3 = plot_mat(diff, f'{pop1} < {pop2} - pval={pval}')
-        fig3.savefig(os.path.join(outdir, f'{cmp_name}.png')) # dpi=300
+        fig3.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png')) # dpi=300
 
 
 run_nbs(comparisons=comparisons, females=False)
