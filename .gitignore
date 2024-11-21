@@ -3,5 +3,6 @@ data/
 *.csv
 *.xlsx
 *.txt
+local_test.py
 .DS_Store
 __pycache__/
