@@ -6,6 +6,14 @@ import os
 import glob
 #from params import groups
 
+def check_tree():
+    ''' Create the directory tree for the results (derivative)'''
+
+    if not os.path.exists('derivative/average'):
+        os.makedirs('derivative/average')
+    if not os.path.exists('derivative/stats'):
+        os.makedirs('derivative/stats')
+    
 def get_single_mat(id):
 
     path = glob.glob(f'data/*/souris_{id}.csv')[0]
