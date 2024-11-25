@@ -16,7 +16,7 @@ def run_nbs(comparisons, females=False):
         stack, y, _, _ = get_nbs_inputs(pop1, pop2, females=females)
         pval, adj, null = nbs_bct_corr_z(stack, thresh=0.15, y_vec=y, k=1000)
 
-        outdir = f'derivative/stats/'
+        outdir = f'derivative/nbs/'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         if females:

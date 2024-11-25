@@ -9,18 +9,21 @@ import glob
 def check_tree():
     ''' Create the directory tree for the results (derivative)'''
 
-    if not os.path.exists('derivative/average'):
-        os.makedirs('derivative/average')
-    if not os.path.exists('derivative/stats'):
-        os.makedirs('derivative/stats')
-    if not os.path.exists('derivative/stats/null'):
-        os.makedirs('derivative/stats/null')
-    if not os.path.exists('derivative/stats/pvals'):
-        os.makedirs('derivative/stats/pvals')
-    if not os.path.exists('derivative/stats/adjacency'):
-        os.makedirs('derivative/stats/adjacency')
-    if not os.path.exists('derivative/stats/figures'):
-        os.makedirs('derivative/stats/figures')
+    paths = ['derivative/average/diff',
+            'derivative/average/raw',
+            'derivative/average/sd',
+            'derivative/average/boxplot',
+            'derivative/permutation',
+            'derivative/nbs/null',
+            'derivative/nbs/pvals',
+            'derivative/nbs/adjacency',
+            'derivative/nbs/figures',
+    ]
+    
+    for path in paths:
+        if not os.path.exists(path):
+            os.makedirs(path)
+            print(f'{path} was created')
     
 def get_single_mat(id):
 
@@ -36,6 +39,8 @@ def get_grp_mat(pop, females=False):
     ----------
     pop : str
         The name of the group
+    females : bool
+        If True, only load the matrices of female mice. Default is False.
 
     Returns
     -------
@@ -43,28 +48,24 @@ def get_grp_mat(pop, females=False):
     '''
 
     mat_list = []
+    
+    desc = pd.read_csv('data/all_df.csv')
     if females:
-        desc = pd.read_csv('data/all_df.csv')
-        ids = desc[(desc['group']==pop) & (desc['sex']=='f')]['id']
-        for id in ids:
-            path = glob.glob(f'data/*/souris_{id}.csv')[0]
-            data = pd.read_csv(path, index_col=0)
-            arr = data.values
-            if np.isnan(np.min(arr)):
-                mean_val = np.nanmean(arr)
-                arr[np.isnan(arr)] = mean_val
-            mat_list.append(arr)
+        mask = (desc['group']==pop) & (desc['sex']=='f')
     else:
-        path_list = glob.glob(f'data/{pop}/*.csv')
-        mat_list = []
-        for fname in path_list:
-            data = pd.read_csv(fname, index_col=0)
-            arr = data.values
-            if np.isnan(np.min(arr)):
-                mean_val = np.nanmean(arr)
-                arr[np.isnan(arr)] = mean_val
-            mat_list.append(arr)
-        print(f'Out of the {len(path_list)} files in {pop}, {len(mat_list)} were successfully loaded')
+        mask = desc['group']==pop
+    ids = desc[mask]['id']
+    for id in ids:
+        path = glob.glob(f'data/*/souris_{id}.csv')[0]
+        data = pd.read_csv(path, index_col=0)
+        arr = data.values # extract values
+        if np.isnan(np.min(arr)): # if NaNs in data, replace with average
+            mean_val = np.nanmean(arr)
+            arr[np.isnan(arr)] = mean_val 
+            np.fill_diagonal(arr, 1) # set diagonal values to 1 (not to the average)
+        mat_list.append(arr)
+
+    print(f'{len(mat_list)} connectivity matrices were successfully loaded')
 
     return mat_list
 
@@ -78,6 +79,8 @@ def get_nbs_inputs(pop1, pop2, females=False):
         The name of the first group
     pop2 : str
         The name of the second group
+    females : bool
+        If True, only load the matrices of female mice. Default is False.
 
     Returns
     -------

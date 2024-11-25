@@ -3,7 +3,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from utils.preproc import *
+from utils.params import acronyms as ac
 
+def plot_diff_group_mat(pop1, pop2, females=False):
+
+    title = f'average difference of {pop1} - {pop2}'
+    if females:
+        title = f'average difference of {pop1} - {pop2} (females)'
+
+    mat_list1 = get_grp_mat(pop1, females=females)
+    mat_list2 = get_grp_mat(pop2, females=females)
+
+    def get_av(mat_list):
+        stack = np.stack((mat_list), axis=-1)
+        av = np.mean(stack, axis=-1)
+        return av
+
+    diff = get_av(mat_list1) - get_av(mat_list2)
+
+    fig, ax = plt.subplots()
+    sns.heatmap(diff, cmap='coolwarm', center=0, vmin=-1, vmax=1, ax=ax)
+    ax.set_title(title)
+
+    return fig
 
 def plot_grp_box(df):
     ''' Plots a boxplot of the average connectivity values of each group'''
@@ -65,24 +87,45 @@ def plot_sgl_mat(fname, title, fout):
     fig = plot_mat(data, title)
     fig.savefig(fout)
 
-def plot_grp_mat(pop, females=False):
+def plot_grp_mat(pop, females=False, metric='mean'):
     ''' Plots the average matrix of a group'''
+
+    # define paths and title depending on args. 
+    path_map = {
+        ('mean', True): ('mean connectivity - {pop} - females', 'derivative/average/raw/females_{pop}.png'),
+        ('sd', True): ('connectivity sd - {pop} - females', 'derivative/average/sd/females_{pop}.png'),
+        ('mean', False): ('mean connectivity - {pop}', 'derivative/average/raw/{pop}.png'),
+        ('sd', False): ('connectivity sd - {pop}', 'derivative/average/sd/{pop}.png'),
+    }
+    key = (metric, females)
+    if key in path_map:
+        title_template, fout_template = path_map[key]
+        title = title_template.format(pop=pop)
+        fout = fout_template.format(pop=pop)
 
     mat_list = get_grp_mat(pop, females=females)
     stack = np.stack((mat_list), axis=-1)
-    av = np.mean(stack, axis=-1)
-    if females:
-        fig = plot_mat(av,f'{pop} - females')
-        fig.savefig(f'derivative/average/females_{pop}.png')
-    else:
-        fig = plot_mat(av, pop)
-        fig.savefig(f'derivative/average/{pop}.png')
 
-def plot_mat(data, title):
+    if metric == 'mean':
+        vals = np.mean(stack, axis=-1)
+        vmin, vmax = (-1, 1)
+    elif metric == 'sd':
+        vals = np.std(stack, axis=-1)
+        vmin, vmax = (0, 0.5)
+
+    fig = plot_mat(vals,title, vmin=vmin, vmax=vmax)
+    fig.savefig(fout)
+
+
+def plot_mat(data, title, vmin=-1, vmax=1): # TODO : add names of ROIs
     ''' Plots a matrix'''
     
-    fig, ax = plt.subplots()
-    sns.heatmap(data, ax=ax, cmap='coolwarm', center=0)
+    fig, ax = plt.subplots(figsize=(7.5, 6))
+    sns.heatmap(data, ax=ax, cmap='coolwarm', center=0,
+                xticklabels=ac, yticklabels=ac,
+                vmin=vmin, vmax=vmax)
     ax.set_title(title)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+    plt.tight_layout()
     
     return fig
