@@ -1,7 +1,87 @@
 from __future__ import division
 import numpy as np
 from scipy import stats
-#from bct.algorithms import get_components 
+from statsmodels.stats.multitest import multipletests
+import matplotlib.pyplot as plt
+from utils.preproc import get_ttest_inputs, back2mat
+
+#############################################################################
+# Permutation testing
+#############################################################################
+
+
+def ttest_with_fdr(pop1, pop2, alpha=0.05):
+
+    arr1, arr2 = get_ttest_inputs(pop1, pop2)
+    T_stats, raw_pvals = stats.ttest_ind(arr1, arr2, axis=0, equal_var=False, nan_policy='omit')
+
+    # FDR correction using Benjamini-Hochberg
+    _, fdr_pvals, _, _ = multipletests(raw_pvals, alpha=alpha, method='fdr_bh')
+
+    raw_pvals = back2mat(raw_pvals) # convert to matrix
+    fdr_pvals = back2mat(fdr_pvals)
+
+    return raw_pvals, fdr_pvals
+
+def permutation_test_with_fdr(pop1, pop2, n_permutations=10000, alpha=0.05):
+    '''
+    Perform a permutation test on each coordinate of two groups of matrices
+    and correct p-values using False Discovery Rate (FDR).
+    
+    Parameters:
+    ----------
+        matrix_group1 : numpy.ndarray
+            First group of matrices (shape: n_samples, n_edges, n_edges).
+        matrix_group2 : numpy.ndarray
+            Second group of matrices (shape: n_samples, n_edges, n_edges).
+        n_permutations : int 
+            Number of permutations for the test.
+        alpha :float 
+            Significance level for FDR correction.
+        
+    Returns:
+    ----------
+        observed_p_values (numpy.ndarray): Raw p-values for each coordinate.
+        fdr_adjusted_p_values (numpy.ndarray): FDR-adjusted p-values for each coordinate.
+    '''
+
+    arr1, arr2 = get_ttest_inputs(pop1, pop2)
+    n_samples1 = arr1.shape[0]
+    n_coords = arr1.shape[1]
+    
+    # Compute observed test statistic (difference in means)
+    obs_stat = np.mean(arr1, axis=0) - np.mean(arr2, axis=0)
+    
+    # Combine data for permutation
+    combined_data = np.vstack([arr1, arr2])
+    n_combined = combined_data.shape[0]
+    
+    # Permutation test
+    perm_stats = np.zeros((n_permutations, n_coords))
+    for i in range(n_permutations):
+        # Shuffle labels
+        perm_indices = np.random.permutation(n_combined)
+        perm_group1 = combined_data[perm_indices[:n_samples1], :]
+        perm_group2 = combined_data[perm_indices[n_samples1:], :]
+        
+        # Compute permuted statistic
+        perm_stats[i, :] = np.mean(perm_group1, axis=0) - np.mean(perm_group2, axis=0)
+    
+    # Calculate p-values
+    raw_pvals = np.mean(np.abs(perm_stats) >= np.abs(obs_stat), axis=0)
+    
+    # FDR correction using Benjamini-Hochberg
+    _, fdr_pvals, _, _ = multipletests(raw_pvals, alpha=alpha, method='fdr_bh')
+
+    raw_pvals = back2mat(raw_pvals) # convert to matrix
+    fdr_pvals = back2mat(fdr_pvals)
+
+    return raw_pvals, fdr_pvals
+
+
+#############################################################################
+# NBS functions
+#############################################################################
 
 ######################
 # The BCT functions are stolen from https://pypi.org/project/bctpy/

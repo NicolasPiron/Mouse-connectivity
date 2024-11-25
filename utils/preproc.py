@@ -13,11 +13,16 @@ def check_tree():
             'derivative/average/raw',
             'derivative/average/sd',
             'derivative/average/boxplot',
-            'derivative/permutation',
             'derivative/nbs/null',
             'derivative/nbs/pvals',
             'derivative/nbs/adjacency',
             'derivative/nbs/figures',
+            'derivative/ttest/figures/raw_pvals',
+            'derivative/ttest/pvals',
+            'derivative/ttest/pvals/raw_pvals',
+            'derivative/permutations/figures/raw_pvals',
+            'derivative/permutations/pvals',
+            'derivative/permutations/pvals/raw_pvals',
     ]
     
     for path in paths:
@@ -31,6 +36,15 @@ def get_single_mat(id):
     data = pd.read_csv(path, index_col=0)
 
     return data.values
+
+
+def get_av_grp_mat(pop, females=False):
+    ''' '''
+
+    mat_list = get_grp_mat(pop, females=females)
+    stack = np.stack((mat_list), axis=-1)
+
+    return np.mean(stack, axis=-1)
 
 def get_grp_mat(pop, females=False):
     ''' Load all the matrices in a group and return them as a list of numpy arrays
@@ -69,6 +83,71 @@ def get_grp_mat(pop, females=False):
 
     return mat_list
 
+def get_ttest_inputs(pop1, pop2, females=False):
+    ''' Gets the input for the ttest function. Takes 2 lists of matrices, and for each matrix, 
+    extract the lower triangle values. Stack them in a 2D array.
+    Returns two 2D arrays.
+    
+    Parameters
+    ----------
+    pop1 : str
+        The name of the first group
+    pop2 : str
+        The name of the second group
+    females : bool
+        If True, only load the matrices of female mice. Default is False.
+        
+    Returns
+    -------
+    x1 : np.ndarray
+        A 2D array of the matrices of the first group, shape (n_samples, n_edges x n_edges / 2)
+    x2 : np.ndarray
+        A 2D array of the matrices of the second group, shape (n_samples, n_edges x n_edges / 2)
+    '''
+    mat_list1 = get_grp_mat(pop1, females=females)
+    mat_list2 = get_grp_mat(pop2, females=females)
+
+    n_sample1 = len(mat_list1)
+    n_sample2 = len(mat_list2)
+    n_edges = mat_list1[0].shape[0]
+
+    assert n_edges == mat_list2[0].shape[0], "Matrices have different shapes"
+
+    tril_indices = np.tril_indices(n_edges, k=-1) # indices of the lower triangle (unique edges)
+    n_datapoints = len(tril_indices[0]) # number of unique edges (not counting the diagonal)
+
+    x1 = np.zeros((n_sample1, n_datapoints)) # initialize the result arrays
+    for i, matrix in enumerate(mat_list1): 
+        x1[i] = matrix[tril_indices] # fill the result array with the lower triangle values
+    x2 = np.zeros((n_sample2, n_datapoints))
+    for i, matrix in enumerate(mat_list2):
+        x2[i] = matrix[tril_indices]
+
+    return x1, x2
+
+def back2mat(data, n_edges=26):
+    ''' Convert a 1D array of the lower triangle values of a matrix to a full matrix
+
+    Parameters
+    ----------
+    data : np.ndarray
+        A 1D array of the lower triangle values of a matrix
+    n_edges : int
+        The number of edges of the matrix
+
+    Returns
+    -------
+    mat : np.ndarray
+        A 2D array of the full matrix
+    '''
+
+    tril_indices = np.tril_indices(n_edges, k=-1)
+    mat = np.zeros((n_edges, n_edges))
+    mat[tril_indices] = data
+    mat = mat + mat.T
+    np.fill_diagonal(mat, 1)
+
+    return mat
 
 def get_nbs_inputs(pop1, pop2, females=False):
     ''' Get the input for the NBS function

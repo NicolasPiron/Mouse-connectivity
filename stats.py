@@ -1,4 +1,4 @@
-from utils.conn import nbs_bct_corr_z
+from utils.conn import nbs_bct_corr_z, ttest_with_fdr, permutation_test_with_fdr
 from utils.preproc import *
 from utils.plotting import *
 from utils.params import comparisons
@@ -9,6 +9,49 @@ from utils.params import comparisons
 ################################################################################
 check_tree()
 
+def run_stat_comp(comparisons, test='ttest', females=False):
+
+    for pop1, pop2 in comparisons:
+
+        if test == 'ttest':
+            raw_pvals, fdr_pvals = ttest_with_fdr(pop1, pop2)
+            outdir = f'derivative/ttest/'
+        elif test == 'permutations':
+            raw_pvals, fdr_pvals = permutation_test_with_fdr(pop1, pop2)
+            outdir = f'derivative/permutations/'
+
+        if females:
+            cmp_name = f'fem_{pop1}-vs-{pop2}'
+            title = f'{test} {pop1} - {pop2}, FDR < 0.05 (females)'
+        else:
+            cmp_name = f'{pop1}-vs-{pop2}'
+            title = f'{test} {pop1} - {pop2}, FDR < 0.05'
+
+        np.savetxt(os.path.join(outdir, 'pvals', f'{cmp_name}_pval.csv'), fdr_pvals, delimiter=',')
+
+        # plot (pop1 - pop2) * mask
+        mask = fdr_pvals < 0.05
+        mask = mask.astype(int)
+
+        av1 = get_av_grp_mat(pop1)
+        av2 = get_av_grp_mat(pop2)
+        diff = av1 - av2
+        diff = diff * mask
+
+        fig = plot_mat(diff, title)
+        fig.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png'), dpi=300) # dpi=300
+
+        # with raw p-values
+        np.savetxt(os.path.join(outdir, 'pvals', 'raw_pvals', f'{cmp_name}_raw_pval.csv'), raw_pvals, delimiter=',')
+        mask = raw_pvals < 0.05
+        mask = mask.astype(int)
+        diff = av1 - av2
+        diff = diff * mask
+
+        fig = plot_mat(diff, f'{test} {pop1} - {pop2}, p < 0.05')
+        fig.savefig(os.path.join(outdir, 'figures', 'raw_pvals', f'{cmp_name}_raw_pval.png'), dpi=300) # dpi=300
+    
+        
 def run_nbs(comparisons, females=False):
 
     for pop1, pop2 in comparisons:
@@ -17,8 +60,6 @@ def run_nbs(comparisons, females=False):
         pval, adj, null = nbs_bct_corr_z(stack, thresh=0.15, y_vec=y, k=1000)
 
         outdir = f'derivative/nbs/'
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
         if females:
             cmp_name = f'fem_{pop1}-vs-{pop2}'
         else:
@@ -51,9 +92,13 @@ def run_nbs(comparisons, females=False):
             fig3 = plot_mat(diff, f'females - {pop1} < {pop2} - pval={pval}')
         else:
             fig3 = plot_mat(diff, f'{pop1} < {pop2} - pval={pval}')
-        fig3.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png')) # dpi=300
+        fig3.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png'), dpi=300) # dpi=300
 
 
-run_nbs(comparisons=comparisons, females=False)
-run_nbs(comparisons=comparisons, females=True)
+# run_nbs(comparisons=comparisons, females=False)
+# run_nbs(comparisons=comparisons, females=True)
+run_stat_comp(comparisons=comparisons, test='permutations', females=False)
+run_stat_comp(comparisons=comparisons, test='permutations', females=True)
+run_stat_comp(comparisons=comparisons, test='ttest', females=False)
+run_stat_comp(comparisons=comparisons, test='ttest', females=True)
 
