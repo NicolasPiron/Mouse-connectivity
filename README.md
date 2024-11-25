@@ -1,6 +1,6 @@
 Visualization and statistics for brain connectivity data of 3xTgAD mice. 
 
-We used permutation tests and  Network Based Statisics (NBS; Zalesky et al., (2010)) to analyze differences in connectivity between different mouse strains :
+We used permutation tests, t-tests and  Network Based Statisics (NBS; Zalesky et al., (2010)) to analyze differences in connectivity between different mouse strains :
 - Wild type (C57BL/6J)
 - Alzheimer's Model (3xTgAD)
 - Wild type TSPO KO

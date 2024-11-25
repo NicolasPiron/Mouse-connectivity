@@ -6,6 +6,7 @@ from utils.preproc import *
 from utils.params import acronyms as ac
 
 def plot_diff_group_mat(pop1, pop2, females=False):
+    ''' Plots the difference between the average connectivity matrices of two groups'''
 
     title = f'average difference of {pop1} - {pop2}'
     if females:
@@ -45,6 +46,8 @@ def plot_grp_box(df):
     return fig
 
 def plot_sexdiff_box(df):
+    ''' Plots a boxplot of the average connectivity values of each group, and shows the difference
+    between males and females'''
 
     fig, ax = plt.subplots(figsize=(6, 4))  
 
@@ -60,6 +63,8 @@ def plot_sexdiff_box(df):
     return fig
 
 def plot_female_box(df):
+    ''' Plots a boxplot of the average connectivity values of each group, with only 
+    the females'''
 
     fig, ax = plt.subplots(figsize=(6, 4))  
 
@@ -117,7 +122,7 @@ def plot_grp_mat(pop, females=False, metric='mean'):
     fig.savefig(fout)
 
 
-def plot_mat(data, title, vmin=-1, vmax=1): # TODO : add names of ROIs
+def plot_mat(data, title, vmin=-1, vmax=1): 
     ''' Plots a matrix'''
     
     fig, ax = plt.subplots(figsize=(7.5, 6))

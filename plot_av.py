@@ -2,6 +2,10 @@ from utils.preproc import *
 from utils.plotting import *
 from utils.params import groups, comparisons
 
+# This script compares the average connectivity matrices of all the pairs of 
+# groups using three different methods: t-test, permutation test and NBS.
+
+
 # preprocessing
 check_tree()
 if not len(glob.glob('data/*/*souris*.csv')) == 0:

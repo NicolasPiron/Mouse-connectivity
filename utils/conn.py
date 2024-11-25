@@ -6,11 +6,30 @@ import matplotlib.pyplot as plt
 from utils.preproc import get_ttest_inputs, back2mat
 
 #############################################################################
-# Permutation testing
+# Permutation test and t-test with FDR correction
 #############################################################################
 
 
 def ttest_with_fdr(pop1, pop2, alpha=0.05):
+    ''' Performs a t-test on each coordinate of two groups of matrices
+    and corrects p-values using False Discovery Rate (FDR).
+    
+    Parameters:
+    ----------
+    pop1 : str
+        Name of the first group.
+    pop2 : str
+        Name of the second group.
+    alpha :float 
+        Significance level for FDR correction.
+    
+    Returns:
+    ----------
+    raw_pvals : numpy.ndarray
+        Raw p-values for each coordinate in shape (n_edges, n_edges).
+    adj_pvals : numpy.ndarray
+        FDR-adjusted p-values for each coordinate. Same shape as raw_pvals.
+    '''
 
     arr1, arr2 = get_ttest_inputs(pop1, pop2)
     T_stats, raw_pvals = stats.ttest_ind(arr1, arr2, axis=0, equal_var=False, nan_policy='omit')
@@ -25,24 +44,26 @@ def ttest_with_fdr(pop1, pop2, alpha=0.05):
 
 def permutation_test_with_fdr(pop1, pop2, n_permutations=10000, alpha=0.05):
     '''
-    Perform a permutation test on each coordinate of two groups of matrices
-    and correct p-values using False Discovery Rate (FDR).
+    Performs a permutation test on each coordinate of two groups of matrices
+    and corrects p-values using False Discovery Rate (FDR).
     
     Parameters:
     ----------
-        matrix_group1 : numpy.ndarray
-            First group of matrices (shape: n_samples, n_edges, n_edges).
-        matrix_group2 : numpy.ndarray
-            Second group of matrices (shape: n_samples, n_edges, n_edges).
-        n_permutations : int 
-            Number of permutations for the test.
-        alpha :float 
-            Significance level for FDR correction.
+    pop1 : str
+        Name of the first group.
+    pop2 : str
+        Name of the second group.
+    n_permutations : int 
+        Number of permutations for the test.
+    alpha :float 
+        Significance level for FDR correction.
         
     Returns:
     ----------
-        observed_p_values (numpy.ndarray): Raw p-values for each coordinate.
-        fdr_adjusted_p_values (numpy.ndarray): FDR-adjusted p-values for each coordinate.
+    raw_pvals : numpy.ndarray
+        Raw p-values for each coordinate in shape (n_edges, n_edges).
+    adj_pvals : numpy.ndarray
+        FDR-adjusted p-values for each coordinate. Same shape as raw_pvals.
     '''
 
     arr1, arr2 = get_ttest_inputs(pop1, pop2)

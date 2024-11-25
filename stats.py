@@ -5,11 +5,14 @@ from utils.params import comparisons
 
 ################################################################################
 # This script compares the average connectivity matrices of all the pairs of
-# groups
+# groups using three different methods: t-test, permutation test and NBS.
 ################################################################################
 check_tree()
 
 def run_stat_comp(comparisons, test='ttest', females=False):
+    ''' Run a statistical comparison between the average connectivity matrices of two groups
+    using either a t-test or a permutation test. The results are saved in .csv files and figures.
+    '''
 
     for pop1, pop2 in comparisons:
 
@@ -53,6 +56,7 @@ def run_stat_comp(comparisons, test='ttest', females=False):
     
         
 def run_nbs(comparisons, females=False):
+    ''' Run a Network Based Statistics comparison between the average connectivity matrices of two groups.'''
 
     for pop1, pop2 in comparisons:
 
@@ -95,8 +99,8 @@ def run_nbs(comparisons, females=False):
         fig3.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png'), dpi=300) # dpi=300
 
 
-# run_nbs(comparisons=comparisons, females=False)
-# run_nbs(comparisons=comparisons, females=True)
+run_nbs(comparisons=comparisons, females=False)
+run_nbs(comparisons=comparisons, females=True)
 run_stat_comp(comparisons=comparisons, test='permutations', females=False)
 run_stat_comp(comparisons=comparisons, test='permutations', females=True)
 run_stat_comp(comparisons=comparisons, test='ttest', females=False)
