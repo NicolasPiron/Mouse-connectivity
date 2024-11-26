@@ -12,18 +12,18 @@ The connectivity measures are based on blood flow in the brain and were aquired 
 
 To run the analysis, one must have the raw data organized as such: 
 
-main_dir|-- clone repo here
-        |-- data
-                |--code_animaux.xlsx
-                |--3xTgAD
-                    |--raw matrix 1
-                    |--raw matrix n
-                |--3xTgAD_TSPO_KO
-                    |--raw matrix 1
-                    |--raw matrix n
-                |--TSPO_KO
-                    |--raw matrix 1
-                    |--raw matrix n
-                |--WT
-                    |--raw matrix 1
-                    |--raw matrix n
+
+* clone code here
+* [data]
+  * code_animaux.xlsx
+  * [3xTgAD]
+    * matrix1.txt
+    * matrixn.txt
+  * [3xTgAD_TSPO_KO]
+    * ...
+  * [TSPO_KO]
+    * ...
+  * [WT]
+    * ...
+
+
