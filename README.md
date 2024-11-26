@@ -16,8 +16,9 @@ To run the analysis, the raw data should be organized as such:
 * [data]
   * code_animaux.xlsx
   * [3xTgAD]
-    * matrix1.txt
-    * matrixn.txt
+    * matrix_1.txt
+    * ...
+    * matrix_n.txt
   * [3xTgAD_TSPO_KO]
     * ...
   * [TSPO_KO]
