@@ -21,10 +21,7 @@ def plot_diff_group_mat(pop1, pop2, females=False):
         return av
 
     diff = get_av(mat_list1) - get_av(mat_list2)
-
-    fig, ax = plt.subplots()
-    sns.heatmap(diff, cmap='coolwarm', center=0, vmin=-1, vmax=1, ax=ax)
-    ax.set_title(title)
+    fig = plot_mat(diff, title)
 
     return fig
 

@@ -23,6 +23,7 @@ def check_tree():
             'derivative/permutations/figures/raw_pvals',
             'derivative/permutations/pvals',
             'derivative/permutations/pvals/raw_pvals',
+            'derivative/anova',
     ]
     
     for path in paths:

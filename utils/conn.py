@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy as np
+import pandas as pd
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
 import matplotlib.pyplot as plt
@@ -9,6 +10,28 @@ from utils.preproc import get_ttest_inputs, back2mat
 # Permutation test and t-test with FDR correction
 #############################################################################
 
+def anova(*pops, females=False):
+    ''' Performs a one-way ANOVA on the averaged connectivity matrices of 
+    multiple groups.'''
+
+    data = pd.read_csv('data/all_df.csv')
+
+    # get the average values for each individual in each group
+    grp_lst = list()
+    for pop in pops:
+        if females:
+            pop_data = data[(data['group'] == pop) & (data['sex'] == 'f')]['average_connectivity']
+        else:
+            pop_data = data[data['group'] == pop]['average_connectivity']
+        grp_lst.append(pop_data.values)
+        print(f'loaded {pop} data')
+    
+    F, p = stats.f_oneway(*grp_lst)
+    print(f'results of the ANOVA on: {pops}')
+    print('F statistic: ', F)
+    print('P value: ', p)
+    
+    return F, p
 
 def ttest_with_fdr(pop1, pop2, alpha=0.05):
     ''' Performs a t-test on each coordinate of two groups of matrices

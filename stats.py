@@ -1,13 +1,29 @@
-from utils.conn import nbs_bct_corr_z, ttest_with_fdr, permutation_test_with_fdr
+from utils.conn import nbs_bct_corr_z, ttest_with_fdr, permutation_test_with_fdr, anova
 from utils.preproc import *
 from utils.plotting import *
-from utils.params import comparisons
+from utils.params import comparisons, groups
 
 ################################################################################
 # This script compares the average connectivity matrices of all the pairs of
 # groups using three different methods: t-test, permutation test and NBS.
+# Also runs an ANOVA on the mean connectivity values of all the groups.
 ################################################################################
 check_tree()
+
+def run_anova(*groups):
+    ''' Run an ANOVA on the grouped averaged connectivity values. '''
+
+    F, p = anova(*groups)
+
+    # save the p-values and F stats in a .csv file
+    df = pd.DataFrame(np.array([F, p]), index=['F-stat', 'pval'], columns=['value'])
+    grp_str = '-'.join(groups)
+    if len(groups) == 4:
+        grp_str = 'all'
+    fname = f'anova_res_{grp_str}.csv'
+    fout = os.path.join('derivative/anova/', fname)
+    df.to_csv(fout, index=True)
+
 
 def run_stat_comp(comparisons, test='ttest', females=False):
     ''' Run a statistical comparison between the average connectivity matrices of two groups
@@ -98,7 +114,9 @@ def run_nbs(comparisons, females=False):
             fig3 = plot_mat(diff, f'{pop1} < {pop2} - pval={pval}')
         fig3.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png'), dpi=300) # dpi=300
 
-
+for comp in comparisons:
+    run_anova(*comp)
+run_anova(*groups)
 run_nbs(comparisons=comparisons, females=False)
 run_nbs(comparisons=comparisons, females=True)
 run_stat_comp(comparisons=comparisons, test='permutations', females=False)
