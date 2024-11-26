@@ -10,8 +10,7 @@ The goal is to observe the effect of the interaction of Alzheimer's and the delt
 
 The connectivity measures are based on blood flow in the brain and were aquired using functional ultrasound (fUS) imaging.
 
-To run the analysis, one must have the raw data organized as such: 
-
+To run the analysis, the raw data should be organized as such: 
 
 * clone code here
 * [data]
