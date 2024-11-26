@@ -8,7 +8,6 @@ from utils.params import comparisons, groups
 # groups using three different methods: t-test, permutation test and NBS.
 # Also runs an ANOVA on the mean connectivity values of all the groups.
 ################################################################################
-check_tree()
 
 def run_anova(*groups):
     ''' Run an ANOVA on the grouped averaged connectivity values. '''
@@ -114,6 +113,7 @@ def run_nbs(comparisons, females=False):
             fig3 = plot_mat(diff, f'{pop1} < {pop2} - pval={pval}')
         fig3.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png'), dpi=300) # dpi=300
 
+pre_run_check()
 for comp in comparisons:
     run_anova(*comp)
 run_anova(*groups)

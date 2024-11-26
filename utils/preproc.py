@@ -1,10 +1,27 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 import glob
-#from params import groups
+
+def pre_run_check():
+    ''' Check if the data is available and preprocessed. If not, preprocess the data.
+    Also ensures that the directory tree for the results is created.
+    Should be run before any analysis script.'''
+
+    check_tree()
+    if not len(glob.glob('data/*/*souris*.csv')) == 0:
+        print('Data already preprocessed')
+    else:
+        try:
+            txt_csv()
+            print('Successfully transformed .txt to .csv')
+        except:
+            print('Could not transform .txt to .csv, some analyses may not work')
+    if not os.path.exists('data/all_df.csv'):
+        try:
+            all_df()
+        except:
+            print('Could not create the dataframe with the average connectivity values, some analyses may not work')
 
 def check_tree():
     ''' Create the directory tree for the results (derivative)'''
@@ -224,7 +241,7 @@ def txt_csv(groups=['WT', '3xTgAD', 'TSPO_KO', '3xTgAD_TSPO_KO']):
     for pop in groups:
         path_list = glob.glob(f'data/{pop}/*.txt')
         for fname in path_list:
-            data = pd.read_csv(fname, sep='\;', header=0, engine='python', index_col=0)
+            data = pd.read_csv(fname, sep=r'\;', header=0, engine='python', index_col=0)
             animal_id = fname.split('Souris')[1].split('_')[1]
             new_fname = f'data/{pop}/souris_{animal_id}.csv'
             data.to_csv(new_fname, index=True)

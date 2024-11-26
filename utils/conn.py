@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
-import matplotlib.pyplot as plt
 from utils.preproc import get_ttest_inputs, back2mat
 
 #############################################################################

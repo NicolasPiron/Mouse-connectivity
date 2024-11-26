@@ -5,16 +5,7 @@ from utils.params import groups, comparisons
 # This script compares the average connectivity matrices of all the pairs of 
 # groups using three different methods: t-test, permutation test and NBS.
 
-
-# preprocessing
-check_tree()
-if not len(glob.glob('data/*/*souris*.csv')) == 0:
-    print('Data already preprocessed')
-else:
-    txt_csv()
-    print('Successfully transformed .txt to .csv')
-if not os.path.exists('data/all_df.csv'):
-    all_df()
+pre_run_check() # check if the data is available and preprocessed
 
 df = pd.read_csv('data/all_df.csv')
 fig1 = plot_grp_box(df)
