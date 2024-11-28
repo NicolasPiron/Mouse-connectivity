@@ -17,6 +17,14 @@ def pre_run_check():
             print('Successfully transformed .txt to .csv')
         except:
             print('Could not transform .txt to .csv, some analyses may not work')
+    if not len(glob.glob('data/*/*souris*zscore.csv')) == 0:
+        print('Data already z-scored')
+    else:
+        try:
+            zscore_mat()
+            print('Successfully z-scored the matrices')
+        except:
+            print('Could not z-score the data, some analyses may not work')
     if not os.path.exists('data/all_df.csv'):
         try:
             all_df()
@@ -64,7 +72,7 @@ def get_av_grp_mat(pop, females=False):
 
     return np.mean(stack, axis=-1)
 
-def get_grp_mat(pop, females=False):
+def get_grp_mat(pop, females=False, z=False):
     ''' Load all the matrices in a group and return them as a list of numpy arrays
 
     Parameters
@@ -73,6 +81,8 @@ def get_grp_mat(pop, females=False):
         The name of the group
     females : bool
         If True, only load the matrices of female mice. Default is False.
+    z : bool
+        If True, load the z-scored matrices. Default is False.
 
     Returns
     -------
@@ -88,7 +98,10 @@ def get_grp_mat(pop, females=False):
         mask = desc['group']==pop
     ids = desc[mask]['id']
     for id in ids:
-        path = glob.glob(f'data/*/souris_{id}.csv')[0]
+        if z:
+            path = glob.glob(f'data/*/souris_{id}_zscore.csv')[0]
+        else:
+            path = glob.glob(f'data/*/souris_{id}.csv')[0]
         data = pd.read_csv(path, index_col=0)
         arr = data.values # extract values
         if np.isnan(np.min(arr)): # if NaNs in data, replace with average
@@ -232,6 +245,26 @@ def all_df():
 
     return None
 
+def zscore_mat(groups=['WT', '3xTgAD', 'TSPO_KO', '3xTgAD_TSPO_KO']):
+    ''' Z-scores the connectivity matrices of each animal. Saves as souris_id_zscore.csv'''
+
+    for pop in groups:
+        path_list = glob.glob(f'data/{pop}/*.csv')
+        for fname in path_list:
+            data = pd.read_csv(fname, index_col=0)
+            mat = data.values
+            # exctract lower triangle values (because symetric matrix -> redundant values + diagonal 
+            # doesn't reflect actual connectivity)
+            tril_indices = np.tril_indices(mat.shape[0], k=-1)
+            tril = mat[tril_indices]
+            z = (tril - np.mean(tril)) / np.std(tril)
+            # convert back to full matrix
+            z = back2mat(z, n_edges=mat.shape[0])
+            animal_id = fname.split('souris_')[1].split('.csv')[0]
+            new_fname = f'data/{pop}/souris_{animal_id}_zscore.csv'
+            pd.DataFrame(z, columns=data.columns, index=data.index).to_csv(new_fname, index=True)    
+
+    return None
 
 def txt_csv(groups=['WT', '3xTgAD', 'TSPO_KO', '3xTgAD_TSPO_KO']):
     ''' Convert all the txt files in a group to csv files.

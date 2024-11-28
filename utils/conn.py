@@ -32,7 +32,7 @@ def anova(*pops, females=False):
     
     return F, p
 
-def ttest_with_fdr(pop1, pop2, alpha=0.05):
+def ttest_with_fdr(pop1, pop2, alpha=0.05, females=False):
     ''' Performs a t-test on each coordinate of two groups of matrices
     and corrects p-values using False Discovery Rate (FDR).
     
@@ -44,6 +44,8 @@ def ttest_with_fdr(pop1, pop2, alpha=0.05):
         Name of the second group.
     alpha :float 
         Significance level for FDR correction.
+    females : bool
+        If True, only load the matrices of female mice. Default is False.
     
     Returns:
     ----------
@@ -53,7 +55,7 @@ def ttest_with_fdr(pop1, pop2, alpha=0.05):
         FDR-adjusted p-values for each coordinate. Same shape as raw_pvals.
     '''
 
-    arr1, arr2 = get_ttest_inputs(pop1, pop2)
+    arr1, arr2 = get_ttest_inputs(pop1, pop2, females=females)
     T_stats, raw_pvals = stats.ttest_ind(arr1, arr2, axis=0, equal_var=False, nan_policy='omit')
 
     # FDR correction using Benjamini-Hochberg
@@ -64,7 +66,7 @@ def ttest_with_fdr(pop1, pop2, alpha=0.05):
 
     return raw_pvals, fdr_pvals
 
-def permutation_test_with_fdr(pop1, pop2, n_permutations=10000, alpha=0.05):
+def permutation_test_with_fdr(pop1, pop2, n_permutations=10000, alpha=0.05, females=False):
     '''
     Performs a permutation test on each coordinate of two groups of matrices
     and corrects p-values using False Discovery Rate (FDR).
@@ -88,7 +90,7 @@ def permutation_test_with_fdr(pop1, pop2, n_permutations=10000, alpha=0.05):
         FDR-adjusted p-values for each coordinate. Same shape as raw_pvals.
     '''
 
-    arr1, arr2 = get_ttest_inputs(pop1, pop2)
+    arr1, arr2 = get_ttest_inputs(pop1, pop2, females=females)
     n_samples1 = arr1.shape[0]
     n_coords = arr1.shape[1]
     

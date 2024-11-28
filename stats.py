@@ -9,10 +9,10 @@ from utils.params import comparisons, groups
 # Also runs an ANOVA on the mean connectivity values of all the groups.
 ################################################################################
 
-def run_anova(*groups):
+def run_anova(*groups, females=False):
     ''' Run an ANOVA on the grouped averaged connectivity values. '''
 
-    F, p = anova(*groups)
+    F, p = anova(*groups, females=females)
 
     # save the p-values and F stats in a .csv file
     df = pd.DataFrame(np.array([F, p]), index=['F-stat', 'pval'], columns=['value'])
@@ -20,6 +20,8 @@ def run_anova(*groups):
     if len(groups) == 4:
         grp_str = 'all'
     fname = f'anova_res_{grp_str}.csv'
+    if females:
+        fname = f'anova_res_fem_{grp_str}.csv'
     fout = os.path.join('derivative/anova/', fname)
     df.to_csv(fout, index=True)
 
@@ -32,7 +34,7 @@ def run_stat_comp(comparisons, test='ttest', females=False):
     for pop1, pop2 in comparisons:
 
         if test == 'ttest':
-            raw_pvals, fdr_pvals = ttest_with_fdr(pop1, pop2)
+            raw_pvals, fdr_pvals = ttest_with_fdr(pop1, pop2, females=females)
             outdir = f'derivative/ttest/'
         elif test == 'permutations':
             raw_pvals, fdr_pvals = permutation_test_with_fdr(pop1, pop2)
@@ -68,6 +70,7 @@ def run_stat_comp(comparisons, test='ttest', females=False):
 
         fig = plot_mat(diff, f'{test} {pop1} - {pop2}, p < 0.05')
         fig.savefig(os.path.join(outdir, 'figures', 'raw_pvals', f'{cmp_name}_raw_pval.png'), dpi=300) # dpi=300
+        plt.close('all')
     
         
 def run_nbs(comparisons, females=False):
@@ -112,13 +115,16 @@ def run_nbs(comparisons, females=False):
         else:
             fig3 = plot_mat(diff, f'{pop1} < {pop2} - pval={pval}')
         fig3.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png'), dpi=300) # dpi=300
+        plt.close('all')
 
 pre_run_check()
 for comp in comparisons:
     run_anova(*comp)
+    run_anova(*comp, females=True)
 run_anova(*groups)
-run_nbs(comparisons=comparisons, females=False)
-run_nbs(comparisons=comparisons, females=True)
+run_anova(*groups, females=True)
+# run_nbs(comparisons=comparisons, females=False)
+# run_nbs(comparisons=comparisons, females=True)
 run_stat_comp(comparisons=comparisons, test='permutations', females=False)
 run_stat_comp(comparisons=comparisons, test='permutations', females=True)
 run_stat_comp(comparisons=comparisons, test='ttest', females=False)

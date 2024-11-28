@@ -6,7 +6,7 @@ check_environment() {
     if [[ "$(hostname)" == "MacBook-Pro-de-Nisso-6.local" ]]; then
         echo "Activating local Conda environment 'mconn'."
         conda init bash
-        conda activate pulsation_proj
+        conda activate mconn
     else
         echo "Activating remote Conda environment 'mne'."
         conda init bash
