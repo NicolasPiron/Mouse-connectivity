@@ -12,8 +12,8 @@ def plot_diff_group_mat(pop1, pop2, females=False):
     if females:
         title = f'average difference of {pop1} - {pop2} (females)'
 
-    mat_list1 = get_grp_mat(pop1, females=females)
-    mat_list2 = get_grp_mat(pop2, females=females)
+    mat_list1 = get_grp_mat(pop1, females=females, z=True)
+    mat_list2 = get_grp_mat(pop2, females=females, z=True)
 
     def get_av(mat_list):
         stack = np.stack((mat_list), axis=-1)
@@ -21,7 +21,7 @@ def plot_diff_group_mat(pop1, pop2, females=False):
         return av
 
     diff = get_av(mat_list1) - get_av(mat_list2)
-    fig = plot_mat(diff, title)
+    fig = plot_mat(diff, title, vmin=None, vmax=None)
 
     return fig
 
@@ -82,39 +82,38 @@ def plot_female_box(df):
 # for matrix plots
 ####################################################################################################
 
-def plot_sgl_mat(fname, title, fout):
+def plot_sgl_mat(id, title, fout):
     ''' Plots the matrix of a single animal'''
-
-    data = pd.read_csv(fname, sep='\;', header=0, engine='python', index_col=0)
-    fig = plot_mat(data, title)
+ 
+    data = get_single_mat(id, z=True)
+    fig = plot_mat(data, title, vmin=None, vmax=None)
     fig.savefig(fout)
 
-def plot_grp_mat(pop, females=False, metric='mean'):
+def plot_grp_mat(pop, females=False, z=False):
     ''' Plots the average matrix of a group'''
 
     # define paths and title depending on args. 
     path_map = {
-        ('mean', True): ('mean connectivity - {pop} - females', 'derivative/average/raw/females_{pop}.png'),
-        ('sd', True): ('connectivity sd - {pop} - females', 'derivative/average/sd/females_{pop}.png'),
-        ('mean', False): ('mean connectivity - {pop}', 'derivative/average/raw/{pop}.png'),
-        ('sd', False): ('connectivity sd - {pop}', 'derivative/average/sd/{pop}.png'),
+        (False, True): ('raw mean connectivity - {pop} - females', 'derivative/average/raw/females_{pop}.png'),
+        (True, True): ('z-scored mean connectivity - {pop} - females', 'derivative/average/zscored/females_{pop}.png'),
+        (False, False): ('raw mean connectivity - {pop}', 'derivative/average/raw/{pop}.png'),
+        (True, False): ('z-scored mean connectivity - {pop}', 'derivative/average/zscored/{pop}.png'),
     }
-    key = (metric, females)
+    key = (z, females)
     if key in path_map:
         title_template, fout_template = path_map[key]
         title = title_template.format(pop=pop)
         fout = fout_template.format(pop=pop)
 
-    mat_list = get_grp_mat(pop, females=females)
-    stack = np.stack((mat_list), axis=-1)
-
-    if metric == 'mean':
-        vals = np.mean(stack, axis=-1)
+    if not z:
+        mat_list = get_grp_mat(pop, females=females, z=False)
         vmin, vmax = (-1, 1)
-    elif metric == 'sd':
-        vals = np.std(stack, axis=-1)
-        vmin, vmax = (0, 0.5)
-
+    elif z:
+        mat_list = get_grp_mat(pop, females=females, z=True)
+        vmin, vmax = (None, None)
+    
+    stack = np.stack((mat_list), axis=-1)
+    vals = np.mean(stack, axis=-1)
     fig = plot_mat(vals,title, vmin=vmin, vmax=vmax)
     fig.savefig(fout)
 

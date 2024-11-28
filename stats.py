@@ -68,7 +68,7 @@ def run_stat_comp(comparisons, test='ttest', females=False):
         diff = av1 - av2
         diff = diff * mask
 
-        fig = plot_mat(diff, f'{test} {pop1} - {pop2}, p < 0.05')
+        fig = plot_mat(diff, f'{test} {pop1} - {pop2}, p < 0.05', vmin=None, vmax=None)
         fig.savefig(os.path.join(outdir, 'figures', 'raw_pvals', f'{cmp_name}_raw_pval.png'), dpi=300) # dpi=300
         plt.close('all')
     
@@ -111,9 +111,9 @@ def run_nbs(comparisons, females=False):
         diff = av1 - av2 
         pval = np.min(pval)
         if females:
-            fig3 = plot_mat(diff, f'females - {pop1} < {pop2} - pval={pval}')
+            fig3 = plot_mat(diff, f'females - {pop1} < {pop2} - pval={pval}', vmin=None, vmax=None)
         else:
-            fig3 = plot_mat(diff, f'{pop1} < {pop2} - pval={pval}')
+            fig3 = plot_mat(diff, f'{pop1} < {pop2} - pval={pval}', vmin=None, vmax=None)
         fig3.savefig(os.path.join(outdir, 'figures', f'{cmp_name}.png'), dpi=300) # dpi=300
         plt.close('all')
 
@@ -123,8 +123,8 @@ for comp in comparisons:
     run_anova(*comp, females=True)
 run_anova(*groups)
 run_anova(*groups, females=True)
-# run_nbs(comparisons=comparisons, females=False)
-# run_nbs(comparisons=comparisons, females=True)
+run_nbs(comparisons=comparisons, females=False)
+run_nbs(comparisons=comparisons, females=True)
 run_stat_comp(comparisons=comparisons, test='permutations', females=False)
 run_stat_comp(comparisons=comparisons, test='permutations', females=True)
 run_stat_comp(comparisons=comparisons, test='ttest', females=False)

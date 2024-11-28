@@ -36,7 +36,7 @@ def check_tree():
 
     paths = ['derivative/average/diff',
             'derivative/average/raw',
-            'derivative/average/sd',
+            'derivative/average/zscored',
             'derivative/average/boxplot',
             'derivative/nbs/null',
             'derivative/nbs/pvals',
@@ -49,6 +49,7 @@ def check_tree():
             'derivative/permutations/pvals',
             'derivative/permutations/pvals/raw_pvals',
             'derivative/anova',
+            'derivative/individuals/',
     ]
     
     for path in paths:
@@ -56,18 +57,22 @@ def check_tree():
             os.makedirs(path)
             print(f'{path} was created')
     
-def get_single_mat(id):
+def get_single_mat(id, z=False):
 
-    path = glob.glob(f'data/*/souris_{id}.csv')[0]
+    # not used yet
+    if z:
+        path = glob.glob(f'data/*/souris_{id}_zscore.csv')[0]
+    else:
+        path = glob.glob(f'data/*/souris_{id}.csv')[0]
     data = pd.read_csv(path, index_col=0)
 
     return data.values
 
 
-def get_av_grp_mat(pop, females=False):
+def get_av_grp_mat(pop, females=False, z=True):
     ''' '''
 
-    mat_list = get_grp_mat(pop, females=females)
+    mat_list = get_grp_mat(pop, females=females, z=z)
     stack = np.stack((mat_list), axis=-1)
 
     return np.mean(stack, axis=-1)
@@ -105,8 +110,10 @@ def get_grp_mat(pop, females=False, z=False):
         data = pd.read_csv(path, index_col=0)
         arr = data.values # extract values
         if np.isnan(np.min(arr)): # if NaNs in data, replace with average
-            mean_val = np.nanmean(arr)
-            arr[np.isnan(arr)] = mean_val 
+            tril_indices = np.tril_indices(arr.shape[0], k=-1) # extract lower triangle values (not counting the diagonal)
+            tril = arr[tril_indices]
+            mean_val = np.nanmean(tril) # calculate the average of the lower triangle values
+            arr[np.isnan(arr)] = mean_val # replace NaNs with the average
             np.fill_diagonal(arr, 1) # set diagonal values to 1 (not to the average)
         mat_list.append(arr)
 
@@ -135,8 +142,8 @@ def get_ttest_inputs(pop1, pop2, females=False):
     x2 : np.ndarray
         A 2D array of the matrices of the second group, shape (n_samples, n_edges x n_edges / 2)
     '''
-    mat_list1 = get_grp_mat(pop1, females=females)
-    mat_list2 = get_grp_mat(pop2, females=females)
+    mat_list1 = get_grp_mat(pop1, females=females, z=True)
+    mat_list2 = get_grp_mat(pop2, females=females, z=True)
 
     n_sample1 = len(mat_list1)
     n_sample2 = len(mat_list2)
@@ -200,8 +207,8 @@ def get_nbs_inputs(pop1, pop2, females=False):
         A 1D array of the group labels
     '''
 
-    mat_list1 = get_grp_mat(pop1, females=females)
-    mat_list2 = get_grp_mat(pop2, females=females)
+    mat_list1 = get_grp_mat(pop1, females=females, z=True)
+    mat_list2 = get_grp_mat(pop2, females=females, z=True)
     npop1 = len(mat_list1)
     npop2 = len(mat_list2)
     stack = np.stack((mat_list1 + mat_list2), axis=-1)
@@ -251,13 +258,15 @@ def zscore_mat(groups=['WT', '3xTgAD', 'TSPO_KO', '3xTgAD_TSPO_KO']):
     for pop in groups:
         path_list = glob.glob(f'data/{pop}/*.csv')
         for fname in path_list:
+            if 'zscore' in fname:
+                continue
             data = pd.read_csv(fname, index_col=0)
             mat = data.values
             # exctract lower triangle values (because symetric matrix -> redundant values + diagonal 
             # doesn't reflect actual connectivity)
             tril_indices = np.tril_indices(mat.shape[0], k=-1)
             tril = mat[tril_indices]
-            z = (tril - np.mean(tril)) / np.std(tril)
+            z = (tril - np.nanmean(tril)) / np.nanstd(tril)
             # convert back to full matrix
             z = back2mat(z, n_edges=mat.shape[0])
             animal_id = fname.split('souris_')[1].split('.csv')[0]

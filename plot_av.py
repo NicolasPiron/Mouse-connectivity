@@ -4,7 +4,6 @@ from utils.params import groups, comparisons
 
 # This script compares the average connectivity matrices of all the pairs of 
 # groups using three different methods: t-test, permutation test and NBS.
-
 pre_run_check() # check if the data is available and preprocessed
 
 df = pd.read_csv('data/all_df.csv')
@@ -17,12 +16,12 @@ fig3.savefig('derivative/average/boxplot/average_connectivity_female.png', dpi=3
 
 # plot the average connectivity matrix of each group, and with females only
 
-metrics = ['mean', 'sd']
+zscore = [True, False]
 females = [True, False]
-for metric in metrics:
+for z in zscore:
     for female in females:
         for pop in groups:
-            plot_grp_mat(pop, females=female, metric=metric)
+            plot_grp_mat(pop, females=female, z=z)
             plt.close('all')
 
 for female in females:
