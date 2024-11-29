@@ -18,6 +18,13 @@ check_environment() {
 check_environment
 
 # Run the Python scripts and the bash script
+echo "Running plot_individuals.py.py..."
+python3 plot_individuals.py
+if [ $? -ne 0 ]; then
+    echo "Error: plot_individuals.py failed."
+    exit 1
+fi
+
 echo "Running plot_av.py..."
 python3 plot_av.py
 if [ $? -ne 0 ]; then
