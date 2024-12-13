@@ -115,7 +115,7 @@ def plot_grp_mat(pop, females=False, z=False):
     stack = np.stack((mat_list), axis=-1)
     vals = np.mean(stack, axis=-1)
     fig = plot_mat(vals,title, vmin=vmin, vmax=vmax)
-    fig.savefig(fout)
+    fig.savefig(fout, dpi=300)
 
 
 def plot_mat(data, title, vmin=-1, vmax=1): 
